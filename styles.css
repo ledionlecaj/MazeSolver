@@ -1,0 +1,13 @@
+ * {
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+ }
+ canvas{
+     border: 1px solid #d3d3d3;
+ }
+ body{
+     width: 100vw;
+     height: 100vh;
+     overflow: hidden;
+ }
