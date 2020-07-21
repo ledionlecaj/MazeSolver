@@ -11,3 +11,11 @@
      height: 100vh;
      overflow: hidden;
  }
+ #selectionMenu{
+     position: absolute;
+     right: 10px;
+     top: 10px;
+ }
+ #buttonMenu{
+     padding-top: 10px;
+ }

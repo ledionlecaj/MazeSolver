@@ -2,9 +2,9 @@
 <html>
 
 <head>
-    <!-- <script src="../p5/p5.min.js"></script>
-    <script src="../p5/addons/p5.dom.min.js"></script>
-    <script src="../p5/addons/p5.sound.min.js"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="MazeVizualizer.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,7 +12,75 @@
 <canvas id='maze'></canvas>
 
 <body>
+    <div id="selectionMenu">
+        <div id="accordion">
+            <h3 class="panel-header" data-panel-no="1">Depth First Search</h3>
+            <div>
+                <header>
+                    <h3>Tie Breaker</h3>
+                </header>
+                <div>
+                    <input type="checkbox" name="tieBreakerDFS" checked="">
+                    <label>First Node</label> <br>
+                    <input type="checkbox" name="tieBreakerDFS">
+                    <label>Last Node</label> <br>
+                    <input type="checkbox" name="tieBreakerDFS">
+                    <label>Random</label> <br>
+                </div>
+            </div>
+            <h3 class="panel-header" data-panel-no="2">Breadth First Search</h3>
+            <div>
+                <header>
+                    <h3>Options</h3>
+                </header>
+                <div>
+                    <input type="checkbox">
+                    <label>Bi-directional</label> <br>
+                </div>
+            </div>
+            <h3 class="panel-header" data-panel-no="3">Greedy Best First Search</h3>
+            <div>
+                <header>
+                    <h3>Heuristic</h3>
+                </header>
+                <div>
+                    <input type="checkbox" name="heuristicFunction" checked="">
+                    <label>Manhattan</label> <br>
+                    <input type="checkbox" name="heuristicFunction">
+                    <label>Euclidian</label> <br>
 
+                </div>
+                <header>
+                    <h3>Options</h3>
+                </header>
+                <div>
+                    <input type="checkbox">
+                    <label>Bi-directional</label> <br>
+
+                </div>
+            </div>
+        </div>
+        <div id="buttonMenu">
+            <input id="newMaze" type="button" value="New Maze" />
+            <input id="startSearch" type="button" value="Start Search" />
+        </div>
+    </div>
 </body>
+
+
+
+
+<script>
+    $("#accordion").accordion();
+    $('input[type="checkbox"]').on('change', function () {
+        $('input[name="' + this.name + '"]').not(this).prop('checked', false);
+    });
+
+    // while (true) {
+    //     var active = $("#accordion").accordion("option", "active");
+    //     console.log(active);
+    // }
+
+</script>
 
 </html>
