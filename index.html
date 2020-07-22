@@ -14,21 +14,19 @@
 <body>
     <div id="selectionMenu">
         <div id="accordion">
-            <h3 class="panel-header" data-panel-no="1">Depth First Search</h3>
+            <h3 class="panel-header">Depth First Search</h3>
             <div>
                 <header>
-                    <h3>Tie Breaker</h3>
+                    <h3>Path Selection</h3>
                 </header>
                 <div>
-                    <input type="checkbox" name="tieBreakerDFS" checked="">
-                    <label>First Node</label> <br>
-                    <input type="checkbox" name="tieBreakerDFS">
-                    <label>Last Node</label> <br>
-                    <input type="checkbox" name="tieBreakerDFS">
+                    <input type="radio" name="pathSelectionDFS" value="sequential" checked="">
+                    <label>Sequential</label> <br>
+                    <input type="radio" name="pathSelectionDFS" value="random">
                     <label>Random</label> <br>
                 </div>
             </div>
-            <h3 class="panel-header" data-panel-no="2">Breadth First Search</h3>
+            <h3 class="panel-header">Breadth First Search</h3>
             <div>
                 <header>
                     <h3>Options</h3>
@@ -38,17 +36,16 @@
                     <label>Bi-directional</label> <br>
                 </div>
             </div>
-            <h3 class="panel-header" data-panel-no="3">Greedy Best First Search</h3>
+            <h3 class="panel-header">Greedy Best First Search</h3>
             <div>
                 <header>
                     <h3>Heuristic</h3>
                 </header>
                 <div>
-                    <input type="checkbox" name="heuristicFunction" checked="">
+                    <input type="radio" name="heuristicGBFS" value="manhattan" checked="">
                     <label>Manhattan</label> <br>
-                    <input type="checkbox" name="heuristicFunction">
+                    <input type="radio" name="heuristicGBFS" value="euclidian">
                     <label>Euclidian</label> <br>
-
                 </div>
                 <header>
                     <h3>Options</h3>
@@ -72,9 +69,9 @@
 
 <script>
     $("#accordion").accordion();
-    $('input[type="checkbox"]').on('change', function () {
-        $('input[name="' + this.name + '"]').not(this).prop('checked', false);
-    });
+    // $('input[type="checkbox"]').on('change', function () {
+    //     $('input[name="' + this.name + '"]').not(this).prop('checked', false);
+    // });
 
     // while (true) {
     //     var active = $("#accordion").accordion("option", "active");

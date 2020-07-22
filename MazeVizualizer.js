@@ -80,6 +80,8 @@ var cellWidth = 15;
 var ctx;
 var maze;
 var objectives;
+var pathSelectionDFS = "sequential";
+var heuristicFunction = "manhattan";
 
 function generateMaze(rows, cols) {
     var maze = getEmptyMaze(rows, cols);
@@ -335,13 +337,17 @@ function DFS(maze, _stack, visited) {
             if (moves.length == 0) {
                 _stack.pop();
             } else {
-                let index = Math.floor(Math.random() * moves.length);
+                var index = 0;
+                if (pathSelectionDFS === "random") {
+                    index = Math.floor(Math.random() * moves.length);
+                }
                 _stack.push(moves[index]);
             }
         }
     }
     return _stack;
 }
+
 function getMoves(cell, maze, visited) {
     let neighbors = getNeighbors(cell, maze);
     let moves = [];
@@ -459,17 +465,35 @@ function driverBFS(start, visited) {
     return _queue;
 }
 function driverGBFS(start, finishCell, visited) {
+    var heuristic;
+    switch (heuristicFunction) {
+        case "manhattan": heuristic = manhattanDistance;
+            break;
+        case "euclidian": heuristic = euclidianDistance;
+            break;
+        default: heuristic = manhattanDistance;
+            break;
+
+    }
     _priorityQueue = new PriorityQueue((cell1, cell2) => heuristic(cell1, finishCell) < heuristic(cell2, finishCell));
     _priorityQueue.push(start);
     visited[start[0]][start[1]] = 1;
     return _priorityQueue;
 }
-function heuristic(startCell, finishCell) {
+
+function manhattanDistance(startCell, finishCell) {
     let x1 = startCell[0];
     let x2 = finishCell[0];
     let y1 = startCell[1];
     let y2 = finishCell[1];
     return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+}
+function euclidianDistance(startCell, finishCell) {
+    let x1 = startCell[0];
+    let x2 = finishCell[0];
+    let y1 = startCell[1];
+    let y2 = finishCell[1];
+    return Math.pow(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2), 0.5);
 }
 
 window.onload = function () {
@@ -486,41 +510,8 @@ window.onload = function () {
     maze = generateMaze(rows, cols);
     objectives = initializeObjective(maze);
     drawMaze(maze);
-    // var start = objectives[0];
-    // var finish = objectives[1];
-    // let visited = getEmptyMatrix(rows, cols, 0);
-    // let dataStructure;
-    // let path;
-    // let searchAlgorithmSelected = "GBFS";
-    // switch (searchAlgorithmSelected) {
-    //     case "DFS": dataStructure = driverDFS(start);
-    //         path = dataStructure;
-    //         break;
-    //     case "BFS": dataStructure = driverBFS(start, visited);
-    //         path = [];
-    //         break;
-    //     case "GBFS": dataStructure = driverGBFS(start, finish, visited);
-    //         path = [];
-    //         break;
-    // }
-    // function Update() {
-    //     drawMaze(maze);
-    //     switch (searchAlgorithmSelected) {
-    //         case "DFS": animateDFS(maze, dataStructure, visited);
-    //             break;
-    //         case "BFS": animateBFS(maze, dataStructure, visited, path);
-    //             break;
-    //         case "GBFS": animateGBFS(maze, dataStructure, visited, path);
-    //             break;
-    //     }
-    //     drawObjectives(maze, objectives);
-    //     requestAnimationFrame(Update);
-    // }
-    // Update();
-
     document.getElementById("newMaze").onclick = function () {
         if (id != null) cancelAnimationFrame(id);
-
         let canvasWidth = window.innerWidth - ACCORDION.offsetWidth - 20;
         let canvasHeight = window.innerHeight;
         CANVAS.width = canvasWidth - (canvasWidth % cellWidth);
@@ -542,17 +533,18 @@ window.onload = function () {
         let searchAlgorithmSelected = $("#accordion").accordion("option", "active");
         switch (searchAlgorithmSelected) {
             case 0: dataStructure = driverDFS(start);
+                pathSelectionDFS = $("input[name='pathSelectionDFS']:checked").val();
                 path = dataStructure;
                 break;
             case 1: dataStructure = driverBFS(start, visited);
                 path = [];
                 break;
-            case 2: dataStructure = driverGBFS(start, finish, visited);
+            case 2: heuristicFunction = $("input[name='heuristicGBFS']:checked").val();
+                dataStructure = driverGBFS(start, finish, visited);
                 path = [];
                 break;
         }
         function Update() {
-            // drawMaze(maze);
             switch (searchAlgorithmSelected) {
                 case 0: animateDFS(maze, dataStructure, visited);
                     break;
