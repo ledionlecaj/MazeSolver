@@ -37,12 +37,6 @@ class PriorityQueue {
         this._siftDown();
         return poppedValue;
     }
-    replace(value) {
-        const replacedValue = this.peek();
-        this._heap[myTop] = value;
-        this._siftDown();
-        return replacedValue;
-    }
     _greater(i, j) {
         return this._comparator(this._heap[i], this._heap[j]);
     }
@@ -69,6 +63,42 @@ class PriorityQueue {
     }
 }
 
+class Queue {
+    constructor(_array = []) {
+        this._queue = _array;
+        this.offset = 0;
+    }
+    size() {
+        return this._queue.length - this.offset;
+    }
+    clear() {
+        this._queue.splice(0, this._queue.length);
+        this.offset = 0;
+    }
+    isEmpty() {
+        return this.size() == 0;
+    }
+    peek() {
+        return this.isEmpty() ? undefined : this._queue[this.offset];
+    }
+    enqueue(...values) {
+        values.forEach(value => {
+            this._queue.push(value);
+        });
+        return this.size();
+    }
+    dequeue() {
+        if (this.isEmpty()) return undefined;
+        var item = this._queue[this.offset++];
+        if (this.offset * 2 >= this._queue.length) {
+            this._queue.splice(0, this.offset);
+            this.offset = 0;
+        }
+        return item;
+    }
+}
+
+
 //functions
 const BORDER_WALL = -2;
 const INNER_WALL = -1;
@@ -82,6 +112,7 @@ var maze;
 var objectives;
 var pathSelectionDFS = "sequential";
 var heuristicFunction = "manhattan";
+var bidirectional = false;
 
 function generateMaze(rows, cols) {
     var maze = getEmptyMaze(rows, cols);
@@ -282,9 +313,9 @@ function drawCell(maze, cell) {
     } else if (isCell(maze, cell, UNVISITED_WALL)) {
         ctx.fillStyle = 'rgb(48,25,52)';
     } else if (isCell(maze, cell, START_CELL)) {
-        ctx.fillStyle = 'red';
-    } else if (isCell(maze, cell, FINISH_CELL)) {
         ctx.fillStyle = 'green';
+    } else if (isCell(maze, cell, FINISH_CELL)) {
+        ctx.fillStyle = 'red';
     }
     ctx.beginPath();
     ctx.fillRect(col * cellWidth, row * cellWidth, cellWidth, cellWidth);
@@ -318,9 +349,13 @@ function animateDFS(maze, _stack, visited, path) {
 function drawVisited(visited) {
     for (let i = 0; i < visited.length; i++) {
         for (let j = 0; j < visited[0].length; j++) {
-            if (visited[i][j]) {
+            if (visited[i][j] > 0) {
                 ctx.fillStyle = 'rgb(152,251,152)';
                 ctx.beginPath();
+                ctx.fillRect(j * cellWidth, i * cellWidth, cellWidth, cellWidth);
+            }
+            if (visited[i][j] < 0) {
+                ctx.fillStyle = 'pink';
                 ctx.fillRect(j * cellWidth, i * cellWidth, cellWidth, cellWidth);
             }
         }
@@ -372,7 +407,7 @@ function drawPath(path) {
 }
 function animateBFS(maze, _queue, visited, path) {
     drawVisited(visited, cellWidth);
-    if (_queue.length > 0) {
+    if (!_queue.isEmpty()) {
         let temp = BFS(maze, _queue, visited);
         if (temp) {
             path.push(temp);
@@ -388,22 +423,28 @@ function animateBFS(maze, _queue, visited, path) {
     drawPath(path);
 }
 function BFS(maze, _queue, visited) {
-    if (_queue.length > 0) {
-        let cell = _queue.shift();
+    if (!_queue.isEmpty()) {
+        let cell = _queue.dequeue();
         if (maze[cell[0]][cell[1]] == FINISH_CELL) {
-            _queue.splice(0, _queue.length);
+            _queue.clear();
             return cell;
         } else {
             let steps = visited[cell[0]][cell[1]] + 1;
             let moves = getMoves(cell, maze, visited);
             if (moves.length != 0) {
                 for (let i = 0; i < moves.length; i++) {
-                    _queue.push(moves[i]);
+                    _queue.enqueue(moves[i]);
                     visited[moves[i][0]][moves[i][1]] = steps;
                 }
             }
         }
     }
+}
+function driverBFS(start, visited) {
+    let _queue = new Queue();
+    _queue.enqueue(start);
+    visited[start[0]][start[1]] = 1;
+    return _queue;
 }
 function getPath(currCell, visited) {
     let neighbors = getNeighbors(currCell);
@@ -458,12 +499,7 @@ function driverDFS(start) {
     _stack.push(start);
     return _stack;
 }
-function driverBFS(start, visited) {
-    let _queue = [];
-    _queue.push(start);
-    visited[start[0]][start[1]] = 1;
-    return _queue;
-}
+
 function driverGBFS(start, finishCell, visited) {
     var heuristic;
     switch (heuristicFunction) {
@@ -495,6 +531,104 @@ function euclidianDistance(startCell, finishCell) {
     let y2 = finishCell[1];
     return Math.pow(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2), 0.5);
 }
+////////////////////////////////////////////////////////////////////////////////
+function animateBFS_bi_directional(maze, _queue, visited, path) {
+    drawVisited(visited);
+    if (!_queue.isEmpty()) {
+        let temp = bi_directionalBFS(maze, _queue, visited);
+        if (temp) {
+            path.push(temp);
+            let steps = visited[temp[0]][temp[1]];
+            let neighbors = getNeighbors(temp);
+            for (let i = 0; i < neighbors.length; i++) {
+                let neighbor = neighbors[i];
+                if (steps > 0) {
+                    if (visited[neighbor[0]][neighbor[1]] < 0) {
+                        path.push(neighbor);
+                    }
+                } else {
+                    if (visited[neighbor[0]][neighbor[1]] > 0) {
+                        path.push(neighbor);
+                    }
+                }
+            }
+        }
+    }
+    if (path.length > 0) {
+        let last1 = path[path.length - 2];
+        let last2 = path[path.length - 1];
+        let next1 = getPathBFS_bi_directional(last1, visited);
+        let next2 = getPathBFS_bi_directional(last2, visited);
+        if (!(last1[0] == next1[0] && last1[1] == next1[1])) {
+            path.push(next1);
+        }
+        if (!(last2[0] == next2[0] && last2[1] == next2[1])) {
+            path.push(next2);
+        }
+    }
+    drawPath(path);
+}
+function bi_directionalBFS(maze, _queue, visited) {
+    if (!_queue.isEmpty()) {
+        let cell = _queue.dequeue();
+        let steps = visited[cell[0]][cell[1]];
+        let neighbors = getNeighbors(cell);
+        for (let i = 0; i < neighbors.length; i++) {
+            let neighbor = neighbors[i];
+            if (steps > 0) {
+                if (visited[neighbor[0]][neighbor[1]] < 0) {
+                    //found intersection
+                    _queue.clear();
+                    return neighbor;
+                } else if (!visited[neighbor[0]][neighbor[1]] && isCell(maze, neighbor, PATH_CELL)) {
+                    visited[neighbor[0]][neighbor[1]] = steps + 1;
+                    _queue.enqueue(neighbor);
+                }
+            } else {
+                if (visited[neighbor[0]][neighbor[1]] > 0) {
+                    //found intersection
+                    _queue.clear();
+                    return neighbor;
+                } else if (!visited[neighbor[0]][neighbor[1]] && isCell(maze, neighbor, PATH_CELL)) {
+                    visited[neighbor[0]][neighbor[1]] = steps - 1;
+                    _queue.enqueue(neighbor);
+                }
+            }
+
+        }
+    }
+}
+function driverBFS_bi_directional(start, finish, visited) {
+    let _queue = new Queue();
+    _queue.enqueue(start);
+    _queue.enqueue(finish);
+    visited[start[0]][start[1]] = 1;
+    visited[finish[0]][finish[1]] = -1;
+    return _queue;
+}
+function getPathBFS_bi_directional(currCell, visited) {
+    let neighbors = getNeighbors(currCell);
+    let steps = visited[currCell[0]][currCell[1]];
+    for (let i = 0; i < neighbors.length; i++) {
+        let neighbor = neighbors[i];
+        if (steps > 0) {
+            if (visited[neighbor[0]][neighbor[1]] > 0) {
+                if (visited[neighbor[0]][neighbor[1]] < steps) {
+                    currCell = neighbor;
+                }
+            }
+        } else {
+            if (visited[neighbor[0]][neighbor[1]] < 0) {
+                if (visited[neighbor[0]][neighbor[1]] >= steps) {
+                    currCell = neighbor;
+                }
+            }
+        }
+
+    }
+    return currCell;
+}
+///////////////////////////////////////////////////////////////////////////////
 
 window.onload = function () {
     var id = null;
@@ -536,7 +670,8 @@ window.onload = function () {
                 pathSelectionDFS = $("input[name='pathSelectionDFS']:checked").val();
                 path = dataStructure;
                 break;
-            case 1: dataStructure = driverBFS(start, visited);
+            case 1: bidirectional = $('#bidirectionalBFS').is(":checked");
+                dataStructure = bidirectional ? driverBFS_bi_directional(start, finish, visited) : driverBFS(start, visited);
                 path = [];
                 break;
             case 2: heuristicFunction = $("input[name='heuristicGBFS']:checked").val();
@@ -548,7 +683,7 @@ window.onload = function () {
             switch (searchAlgorithmSelected) {
                 case 0: animateDFS(maze, dataStructure, visited);
                     break;
-                case 1: animateBFS(maze, dataStructure, visited, path);
+                case 1: bidirectional ? animateBFS_bi_directional(maze, dataStructure, visited, path) : animateBFS(maze, dataStructure, visited, path);
                     break;
                 case 2: animateGBFS(maze, dataStructure, visited, path);
                     break;
