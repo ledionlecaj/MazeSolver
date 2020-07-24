@@ -62,7 +62,6 @@ class PriorityQueue {
         }
     }
 }
-
 class Queue {
     constructor(_array = []) {
         this._queue = _array;
@@ -97,8 +96,6 @@ class Queue {
         return item;
     }
 }
-
-
 //functions
 const BORDER_WALL = -2;
 const INNER_WALL = -1;
@@ -113,7 +110,6 @@ var objectives;
 var pathSelectionDFS = "sequential";
 var heuristicFunction = "manhattan";
 var bidirectional = false;
-
 function generateMaze(rows, cols) {
     var maze = getEmptyMaze(rows, cols);
     let seed = getRandomCell(maze);
@@ -382,7 +378,6 @@ function DFS(maze, _stack, visited) {
     }
     return _stack;
 }
-
 function getMoves(cell, maze, visited) {
     let neighbors = getNeighbors(cell, maze);
     let moves = [];
@@ -433,18 +428,14 @@ function BFS(maze, _queue, visited) {
             let moves = getMoves(cell, maze, visited);
             if (moves.length != 0) {
                 for (let i = 0; i < moves.length; i++) {
-                    _queue.enqueue(moves[i]);
-                    visited[moves[i][0]][moves[i][1]] = steps;
+                    let move = moves[i];
+                    _queue.enqueue(move);
+                    visited[move[0]][move[1]] = steps;
                 }
             }
         }
     }
-}
-function driverBFS(start, visited) {
-    let _queue = new Queue();
-    _queue.enqueue(start);
-    visited[start[0]][start[1]] = 1;
-    return _queue;
+
 }
 function getPath(currCell, visited) {
     let neighbors = getNeighbors(currCell);
@@ -458,80 +449,6 @@ function getPath(currCell, visited) {
     }
     return currCell;
 }
-function animateGBFS(maze, _priorityQueue, visited, path) {
-    drawVisited(visited);
-    if (!_priorityQueue.isEmpty()) {
-        let temp = GreedyBestFirstSearch(maze, _priorityQueue, visited);
-        if (temp) {
-            path.push(temp);
-        }
-    }
-    if (path.length > 0) {
-        let last = path[path.length - 1];
-        let next = getPath(last, visited);
-        if (!(last[0] == next[0] && last[1] == next[1])) {
-            path.push(next);
-        }
-    }
-    drawPath(path);
-}
-function GreedyBestFirstSearch(maze, _priorityQueue, visited) {
-    if (!_priorityQueue.isEmpty()) {
-        let cell = _priorityQueue.pop();
-        if (maze[cell[0]][cell[1]] == FINISH_CELL) {
-            _priorityQueue.clear();
-            return cell;
-        } else {
-            let steps = visited[cell[0]][cell[1]] + 1;
-            let moves = getMoves(cell, maze, visited);
-            if (moves.length != 0) {
-                for (let i = 0; i < moves.length; i++) {
-                    let move = moves[i];
-                    _priorityQueue.push(move);
-                    visited[move[0]][move[1]] = steps;
-                }
-            }
-        }
-    }
-}
-function driverDFS(start) {
-    let _stack = [];
-    _stack.push(start);
-    return _stack;
-}
-
-function driverGBFS(start, finishCell, visited) {
-    var heuristic;
-    switch (heuristicFunction) {
-        case "manhattan": heuristic = manhattanDistance;
-            break;
-        case "euclidian": heuristic = euclidianDistance;
-            break;
-        default: heuristic = manhattanDistance;
-            break;
-
-    }
-    _priorityQueue = new PriorityQueue((cell1, cell2) => heuristic(cell1, finishCell) < heuristic(cell2, finishCell));
-    _priorityQueue.push(start);
-    visited[start[0]][start[1]] = 1;
-    return _priorityQueue;
-}
-
-function manhattanDistance(startCell, finishCell) {
-    let x1 = startCell[0];
-    let x2 = finishCell[0];
-    let y1 = startCell[1];
-    let y2 = finishCell[1];
-    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
-}
-function euclidianDistance(startCell, finishCell) {
-    let x1 = startCell[0];
-    let x2 = finishCell[0];
-    let y1 = startCell[1];
-    let y2 = finishCell[1];
-    return Math.pow(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2), 0.5);
-}
-////////////////////////////////////////////////////////////////////////////////
 function animateBFS_bi_directional(maze, _queue, visited, path) {
     drawVisited(visited);
     if (!_queue.isEmpty()) {
@@ -594,17 +511,8 @@ function bi_directionalBFS(maze, _queue, visited) {
                     _queue.enqueue(neighbor);
                 }
             }
-
         }
     }
-}
-function driverBFS_bi_directional(start, finish, visited) {
-    let _queue = new Queue();
-    _queue.enqueue(start);
-    _queue.enqueue(finish);
-    visited[start[0]][start[1]] = 1;
-    visited[finish[0]][finish[1]] = -1;
-    return _queue;
 }
 function getPathBFS_bi_directional(currCell, visited) {
     let neighbors = getNeighbors(currCell);
@@ -628,8 +536,179 @@ function getPathBFS_bi_directional(currCell, visited) {
     }
     return currCell;
 }
+function animateGBFS(maze, _priorityQueue, visited, path) {
+    drawVisited(visited);
+    if (!_priorityQueue.isEmpty()) {
+        let temp = GreedyBestFirstSearch(maze, _priorityQueue, visited);
+        if (temp) {
+            path.push(temp);
+        }
+    }
+    if (path.length > 0) {
+        let last = path[path.length - 1];
+        let next = getPath(last, visited);
+        if (!(last[0] == next[0] && last[1] == next[1])) {
+            path.push(next);
+        }
+    }
+    drawPath(path);
+}
+function GreedyBestFirstSearch(maze, _priorityQueue, visited) {
+    if (!_priorityQueue.isEmpty()) {
+        let cell = _priorityQueue.pop();
+        if (maze[cell[0]][cell[1]] == FINISH_CELL) {
+            _priorityQueue.clear();
+            return cell;
+        } else {
+            let steps = visited[cell[0]][cell[1]] + 1;
+            let moves = getMoves(cell, maze, visited);
+            if (moves.length != 0) {
+                for (let i = 0; i < moves.length; i++) {
+                    let move = moves[i];
+                    _priorityQueue.push(move);
+                    visited[move[0]][move[1]] = steps;
+                }
+            }
+        }
+    }
+}
+function driverDFS(start) {
+    let _stack = [];
+    _stack.push(start);
+    return _stack;
+}
+function driverBFS(start, visited) {
+    let _queue = new Queue();
+    _queue.enqueue(start);
+    visited[start[0]][start[1]] = 1;
+    return _queue;
+}
+function driverBFS_bi_directional(start, finish, visited) {
+    let _queue = new Queue();
+    _queue.enqueue(start);
+    _queue.enqueue(finish);
+    visited[start[0]][start[1]] = 1;
+    visited[finish[0]][finish[1]] = -1;
+    return _queue;
+}
+function driverGBFS(start, finish, visited) {
+    var heuristic;
+    switch (heuristicFunction) {
+        case "manhattan": heuristic = manhattanDistance;
+            break;
+        case "euclidian": heuristic = euclidianDistance;
+            break;
+        default: heuristic = manhattanDistance;
+            break;
+    }
+    _priorityQueue = new PriorityQueue((cell1, cell2) => heuristic(cell1, finish) < heuristic(cell2, finish));
+    _priorityQueue.push(start);
+    visited[start[0]][start[1]] = 1;
+    return _priorityQueue;
+}
+function manhattanDistance(start, finish) {
+    let x1 = start[0];
+    let x2 = finish[0];
+    let y1 = start[1];
+    let y2 = finish[1];
+    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+}
+function euclidianDistance(start, finish) {
+    let x1 = start[0];
+    let x2 = finish[0];
+    let y1 = start[1];
+    let y2 = finish[1];
+    return Math.pow(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2), 0.5);
+}
 ///////////////////////////////////////////////////////////////////////////////
+function animateGBFS_bi_directional(maze, _priorityQueue, visited, path) {
+    drawVisited(visited);
+    if (!_priorityQueue.isEmpty()) {
+        let temp = bi_directionalGBFS(maze, _priorityQueue, visited);
+        if (temp) {
+            path.push(temp);
+            let steps = visited[temp[0]][temp[1]];
+            let neighbors = getNeighbors(temp);
+            for (let i = 0; i < neighbors.length; i++) {
+                let neighbor = neighbors[i];
+                if (steps > 0) {
+                    if (visited[neighbor[0]][neighbor[1]] < 0) {
+                        path.push(neighbor);
+                    }
+                } else {
+                    if (visited[neighbor[0]][neighbor[1]] > 0) {
+                        path.push(neighbor);
+                    }
+                }
+            }
+        }
+    }
+    if (path.length > 0) {
+        let last1 = path[path.length - 2];
+        let last2 = path[path.length - 1];
+        let next1 = getPathBFS_bi_directional(last1, visited);
+        let next2 = getPathBFS_bi_directional(last2, visited);
+        if (!(last1[0] == next1[0] && last1[1] == next1[1])) {
+            path.push(next1);
+        }
+        if (!(last2[0] == next2[0] && last2[1] == next2[1])) {
+            path.push(next2);
+        }
+    }
+    drawPath(path);
+}
+function bi_directionalGBFS(maze, _priorityQueue, visited) {
 
+    if (!_priorityQueue.isEmpty()) {
+        let cell = _priorityQueue.pop();
+        let steps = visited[cell[0]][cell[1]];
+        let neighbors = getNeighbors(cell);
+        for (let i = 0; i < neighbors.length; i++) {
+            let neighbor = neighbors[i];
+            if (steps > 0) {
+                if (visited[neighbor[0]][neighbor[1]] < 0) {
+                    //found intersection
+                    _priorityQueue.clear();
+                    return neighbor;
+                } else if (!visited[neighbor[0]][neighbor[1]] && isCell(maze, neighbor, PATH_CELL)) {
+                    visited[neighbor[0]][neighbor[1]] = steps + 1;
+                    _priorityQueue.push(neighbor);
+                }
+            } else {
+                if (visited[neighbor[0]][neighbor[1]] > 0) {
+                    //found intersection
+                    _priorityQueue.clear();
+                    return neighbor;
+                } else if (!visited[neighbor[0]][neighbor[1]] && isCell(maze, neighbor, PATH_CELL)) {
+                    visited[neighbor[0]][neighbor[1]] = steps - 1;
+                    _priorityQueue.push(neighbor);
+                }
+            }
+        }
+    }
+}
+function driverGBFS_bi_directional(start, finish, visited) {
+    var heuristic;
+    switch (heuristicFunction) {
+        case "manhattan": heuristic = manhattanDistance;
+            break;
+        case "euclidian": heuristic = euclidianDistance;
+            break;
+        default: heuristic = manhattanDistance;
+            break;
+    }
+    _priorityQueue = new PriorityQueue((cell1, cell2) => {
+        let dist1 = (visited[cell1[0]][cell1[1]] < 0) ? heuristic(cell1, start) : heuristic(cell1, finish);
+        let dist2 = (visited[cell2[0]][cell2[1]] < 0) ? heuristic(cell2, start) : heuristic(cell2, finish);
+        return dist1 < dist2;
+    });
+    _priorityQueue.push(start);
+    _priorityQueue.push(finish);
+    visited[start[0]][start[1]] = 1;
+    visited[finish[0]][finish[1]] = -1;
+    return _priorityQueue;
+}
+////////////////////////////////////////////////////////////////////////////////
 window.onload = function () {
     var id = null;
     const CANVAS = document.getElementById('maze');
@@ -674,8 +753,10 @@ window.onload = function () {
                 dataStructure = bidirectional ? driverBFS_bi_directional(start, finish, visited) : driverBFS(start, visited);
                 path = [];
                 break;
+
             case 2: heuristicFunction = $("input[name='heuristicGBFS']:checked").val();
-                dataStructure = driverGBFS(start, finish, visited);
+                bidirectional = $('#bidirectionalGBFS').is(":checked");
+                dataStructure = bidirectional ? driverGBFS_bi_directional(start, finish, visited) : driverGBFS(start, finish, visited);
                 path = [];
                 break;
         }
@@ -685,7 +766,7 @@ window.onload = function () {
                     break;
                 case 1: bidirectional ? animateBFS_bi_directional(maze, dataStructure, visited, path) : animateBFS(maze, dataStructure, visited, path);
                     break;
-                case 2: animateGBFS(maze, dataStructure, visited, path);
+                case 2: bidirectional ? animateGBFS_bi_directional(maze, dataStructure, visited, path) : animateGBFS(maze, dataStructure, visited, path);
                     break;
             }
             drawObjectives(maze, objectives);
@@ -693,8 +774,6 @@ window.onload = function () {
         }
         Update();
     };
-
-
 }
 
 
